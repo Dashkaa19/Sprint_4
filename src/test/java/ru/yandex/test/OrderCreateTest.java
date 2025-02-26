@@ -15,57 +15,60 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
-import java.util.Random;
-
 
 @RunWith(Parameterized.class)
 public class OrderCreateTest extends BaseTest {
-    private String button;
+    private final String button;
+    private final String name;
+    private final String surname;
+    private final String address;
+    private final int stationId;
+    private final String phoneNumber;
+    private final String date;
+    private final String duration;
+    private final String color;
+    private final String comment;
     private final String url = "https://qa-scooter.praktikum-services.ru/";
 
-    public OrderCreateTest(String button) {
+    public OrderCreateTest(String button, String name, String surname, String address, int stationId,
+                           String phoneNumber, String date, String duration, String color, String comment) {
         this.button = button;
+        this.name = name;
+        this.surname = surname;
+        this.address = address;
+        this.stationId = stationId;
+        this.phoneNumber = phoneNumber;
+        this.date = date;
+        this.duration = duration;
+        this.color = color;
+        this.comment = comment;
     }
 
     @Parameterized.Parameters
     public static Collection<Object[]> getTestData() {
+        Faker faker = new Faker(new Locale("ru"));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+
+
         return Arrays.asList(new Object[][]{
-                {"Header"},
-                {"Bottom"},
+                {"Header", faker.name().firstName(), faker.name().lastName(), String.format("г. %s, ул. %s, д. %s", faker.address().city(), faker.address().streetName(), faker.address().buildingNumber()),
+                        faker.number().numberBetween(1, 238), "7" + faker.number().digits(10),
+                        tomorrow.format(formatter), Duration.getRandomDuration(), "black", faker.lorem().sentence()},
+                {"Header", faker.name().firstName(), faker.name().lastName(), String.format("г. %s, ул. %s, д. %s", faker.address().city(), faker.address().streetName(), faker.address().buildingNumber()),
+                        faker.number().numberBetween(1, 238), "7" + faker.number().digits(10),
+                        tomorrow.plusDays(2).format(formatter), Duration.getRandomDuration(), "grey", faker.lorem().sentence()},
+                {"Bottom", faker.name().firstName(), faker.name().lastName(), String.format("г. %s, ул. %s, д. %s", faker.address().city(), faker.address().streetName(), faker.address().buildingNumber()),
+                        faker.number().numberBetween(1, 238), "7" + faker.number().digits(10),
+                        tomorrow.plusDays(3).format(formatter), Duration.getRandomDuration(), "black", faker.lorem().sentence()},
+                {"Bottom", faker.name().firstName(), faker.name().lastName(), String.format("г. %s, ул. %s, д. %s", faker.address().city(), faker.address().streetName(), faker.address().buildingNumber()),
+                        faker.number().numberBetween(1, 238), "7" + faker.number().digits(10),
+                        tomorrow.plusDays(4).format(formatter), Duration.getRandomDuration(), "grey", faker.lorem().sentence()}
         });
     }
 
-
     @Test
-    public void testCreateOrderWithUpButton() {
-        Faker faker = new Faker(new Locale("ru"));
-
-        String name = faker.name().firstName();
-        String surname = faker.name().lastName();
-
-        String city = faker.address().city();
-        String streetName = faker.address().streetName();
-        String buildingNumber = faker.address().buildingNumber();
-
-
-        String address = String.format("г. %s, ул. %s, д. %s",
-                city, streetName, buildingNumber);
-
-        int stationId = faker.number().numberBetween(1, 238);
-
-        String phoneNumber = "7" + faker.number().digits(10);
-
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-        String date = tomorrow.format(formatter);
-
-        String duration = Duration.getRandomDuration();
-
-        String color = new Random().nextBoolean() ? "black" : "grey";
-
-        String comment = faker.lorem().sentence();
-
+    public void testCreateOrder() {
         driver.get(url);
         new HomePage(driver)
                 .waitForLoadHomePage()
@@ -91,6 +94,5 @@ public class OrderCreateTest extends BaseTest {
 
         PopUpWindow popUpWindow = new PopUpWindow(driver);
         popUpWindow.clickButtonYes().checkOrderTitle("Заказ оформлен");
-
     }
 }
